@@ -7,8 +7,17 @@ import json, jwt, datetime
 
 api = Blueprint('api', __name__)
 
-@api.route('/api/userdata', methods=['GET'])
-def UserData():
+
+@api.route('/api/userdata')
+@api.route('/api/userdata/<int:id>')
+def UserID(id=None):
+    if id:
+        users = User.query.get_or_404(id)
+        return Response(
+            response=json.dumps({'id':users.id, 'username':users.username, 'email':users.email}),
+            status=200,
+            mimetype='application/json')
+    
     users = User.query.all()
     output = []
     for user in users:
@@ -20,16 +29,17 @@ def UserData():
         mimetype='application/json'
     )
 
-@api.route('/api/userdata/<int:id>', methods=['GET'])
-def UserID(id):
-    users = User.query.get_or_404(id)
-    return Response(
-        response=json.dumps({'id':users.id, 'username':users.username, 'email':users.email}),
-        status=200,
-        mimetype='application/json')
-
-@api.route('/api/postdata', methods=['GET'])
-def PostData():
+@api.route('/api/postdata')
+@api.route('/api/postdata/<int:id>')
+def PostID(id=None):
+    if id:
+        post = Post.query.get_or_404(id)
+        return Response(
+            response=json.dumps({"id":post.id,"title":post.title,"date posted":post.date_posted,"content":post.content,"author":post.author.username}, indent=4, sort_keys=True, default=str),
+            status=200,
+            mimetype='application/json'
+        )
+    
     posts = Post.query.all()
     output = []
     for post in posts:
@@ -37,15 +47,6 @@ def PostData():
         output.append(post_data)
     return Response(
         response=json.dumps({"Posts":output}, indent=4, sort_keys=True, default=str),
-        status=200,
-        mimetype='application/json'
-    )
-
-@api.route('/api/postdata/<int:id>', methods=['GET'])
-def PostID(id):
-    post = Post.query.get_or_404(id)
-    return Response(
-        response=json.dumps({"id":post.id,"title":post.title,"date posted":post.date_posted,"content":post.content,"author":post.author.username}),
         status=200,
         mimetype='application/json'
     )
